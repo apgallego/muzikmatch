@@ -27,8 +27,8 @@ void launchPreviewUrl(Map<String, dynamic> song) async {
 
 final AudioPlayer player = AudioPlayer();
 
-void playPreview(String url) {
-  player.play(UrlSource(url));
+void playPreview(Map<String, dynamic> song) {
+  player.play(UrlSource(song['previewUrl']));
 }
 
 void stopPreview() {

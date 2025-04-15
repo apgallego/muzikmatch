@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../utils/http_requests.dart';
 import './song_detail_screen.dart';
+import '../constants.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -45,12 +46,12 @@ class _HomeScreenState extends State<HomeScreen> {
               itemCount: results.length,
               itemBuilder: (context, index) {
                 final song = results[index];
-                if (index.isOdd) return Divider(color: Colors.deepPurple);
+                if (index.isOdd) return Divider(color: Color($hexTeal));
                 return ListTile(
                   // leading: Image.network(song['artworkUrl60']),
                   leading: Container(
                     decoration: BoxDecoration(
-                      border: Border.all(color: Colors.deepPurple, width: 2),
+                      border: Border.all(color: Color($hexTeal), width: 2),
                       borderRadius: BorderRadius.circular(
                         5,
                       ), // Opcional, para que sea redondeado

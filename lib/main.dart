@@ -13,8 +13,8 @@ class MuzikMatchApp extends StatelessWidget {
       title: 'MuzikMatch by znx',
       theme: ThemeData(
         appBarTheme: AppBarTheme(
-          //   backgroundColor: Color($hexYellow),
-          backgroundColor: Colors.deepPurple,
+          //   backgroundColor: Color($hexLightGreen),
+          backgroundColor: Color($hexTeal),
           foregroundColor: Colors.white,
           toolbarTextStyle:
               TextTheme(
@@ -37,7 +37,7 @@ class MuzikMatchApp extends StatelessWidget {
                 // Puedes agregar más estilos
               ).titleLarge,
         ),
-        scaffoldBackgroundColor: Color($hexYellow),
+        scaffoldBackgroundColor: Color($hexLightGreen),
         textTheme: TextTheme(
           //   bodySmall: TextStyle(color: Colors.black, fontSize: 18),
           bodyMedium: TextStyle(color: Colors.black, fontSize: 16),
