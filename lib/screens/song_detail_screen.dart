@@ -13,6 +13,7 @@ class SongDetailScreen extends StatefulWidget {
 
 class _SongDetailScreenState extends State<SongDetailScreen> {
   bool isPlaying = false;
+  bool isLoadingArtwork = false;
 
   // dinámicamente crea filas de detalles
   Widget buildDetailRow(String label, String value) {
