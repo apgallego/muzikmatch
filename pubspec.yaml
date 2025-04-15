@@ -48,6 +48,12 @@ dev_dependencies:
   http: ^0.13.6
   url_launcher: ^6.0.9
   # audioplayers: ^0.20.1 #not working
+  flutter_launcher_icons: ^0.13.1
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/muzikmatch.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
