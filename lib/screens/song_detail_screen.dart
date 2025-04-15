@@ -42,7 +42,7 @@ class SongDetailScreen extends StatelessWidget {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: Image.network(
-                    getBiggerArtwork(song['artworkUrl100'], 1000),
+                    getBiggerArtwork(song['artworkUrl100'] ?? '', 1000),
                   ),
                 ),
               ),
@@ -63,7 +63,7 @@ class SongDetailScreen extends StatelessWidget {
 
             if (song['previewUrl'] != null)
               ElevatedButton(
-                onPressed: () => launchPreviewUrl(song),
+                onPressed: () => playPreview(song['previewUrl']),
                 child: Text('Escuchar vista previa 🔊'),
               ),
           ],

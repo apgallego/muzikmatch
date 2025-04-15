@@ -1,5 +1,5 @@
 import 'package:url_launcher/url_launcher.dart';
-// import 'package:audioplayers/audioplayers.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 //get bigger song artworks
 String getBiggerArtwork($artwork, px) {
@@ -23,13 +23,14 @@ void launchPreviewUrl(Map<String, dynamic> song) async {
   }
 }
 
-// // play preview URL
-// void playPreview(Map<String, dynamic> song) async {
-//   final String url = song['previewUrl'];
+// play preview URL
 
-//   // Crea una instancia de AudioPlayer
-//   final AudioPlayer player = AudioPlayer();
+final AudioPlayer player = AudioPlayer();
 
-//   // Reproduce el archivo de audio desde la URL
-//   await player.play(url);
-// }
+void playPreview(String url) {
+  player.play(UrlSource(url));
+}
+
+void stopPreview() {
+  player.stop();
+}

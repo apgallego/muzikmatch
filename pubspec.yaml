@@ -48,6 +48,7 @@ dev_dependencies:
   http: ^0.13.6
   url_launcher: ^6.0.9
   # audioplayers: ^0.20.1 #not working
+  audioplayers: ^5.2.1
   flutter_launcher_icons: ^0.13.1
 
 flutter_icons:
