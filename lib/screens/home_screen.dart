@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:muzikmatch/classes/song.dart';
 import '../utils/http_requests.dart';
 import './song_detail_screen.dart';
 import '../constants.dart';
@@ -12,22 +13,22 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String query = '';
-  List<dynamic> results = [];
+  List<Song> results = []; // Cambiado a una lista de objetos Song
 
   bool isLoading = false;
 
-  // final _songs = <Song>[];
-  // final _seenSongs = <Song>{};
+  final TextEditingController _controller = TextEditingController();
 
-  //loader logic
+  // Lógica de obtención de canciones
   void getSongs() async {
     setState(() {
       isLoading = true;
     });
 
-    results = await searchSongs(query);
+    final response = await searchSongs(query);
 
     setState(() {
+      results = (response).map((songJson) => Song.fromJson(songJson)).toList();
       isLoading = false;
     });
   }
@@ -41,59 +42,86 @@ class _HomeScreenState extends State<HomeScreen> {
           Padding(
             padding: const EdgeInsets.all(16),
             child: TextField(
+              controller: _controller,
               onChanged: (val) => query = val,
+              onSubmitted: (val) {
+                query = val;
+                getSongs();
+              },
               decoration: InputDecoration(
-                labelText: 'Buscar canción',
-                suffixIcon: IconButton(
-                  icon: Icon(Icons.search),
-                  onPressed: getSongs,
+                labelText: 'Search Song',
+                suffixIcon: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(icon: Icon(Icons.search), onPressed: getSongs),
+                    IconButton(
+                      icon: Icon(Icons.cancel),
+                      onPressed: () {
+                        setState(() {
+                          query = '';
+                          _controller.clear();
+                          results = [];
+                        });
+                      },
+                    ),
+                  ],
                 ),
               ),
             ),
           ),
 
-          //we show loader while it is searching
+          // Mostramos un cargador mientras se busca
           if (isLoading) const Center(child: CircularProgressIndicator()),
 
-          //we show results when it finishes searching
+          // Mostramos los resultados cuando termina la búsqueda
           if (!isLoading)
             Expanded(
-              child: ListView.builder(
-                itemCount: results.length,
-                itemBuilder: (context, index) {
-                  final song = results[index];
-                  if (index.isOdd) return Divider(color: Color($hexTeal));
-                  return ListTile(
-                    // leading: Image.network(song['artworkUrl60']),
-                    leading: Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Color($hexTeal), width: 2),
-                        borderRadius: BorderRadius.circular(
-                          5,
-                        ), // Opcional, para que sea redondeado
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(5),
-                        child: Image.network(song['artworkUrl60']),
-                      ),
-                    ),
-                    title: Text(song['trackName']),
-                    subtitle: Text(song['artistName']),
-
-                    //           trailing:   Icon(
-                    // alreadySaved ? Icons.favorite : Icons.favorite_border,
-                    // color: alreadySaved ? Colors.red : null,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => SongDetailScreen(song: song),
+              child:
+                  results.isEmpty
+                      ? Center(
+                        child: Text(
+                          'No songs found. Try another search 🎧',
+                          style: TextStyle(fontSize: 16, color: Colors.black54),
                         ),
-                      );
-                    },
-                  );
-                },
-              ),
+                      )
+                      : ListView.builder(
+                        itemCount: results.length,
+                        itemBuilder: (context, index) {
+                          final song = results[index];
+
+                          // Separador opcional entre elementos
+                          if (index.isOdd) {
+                            return Divider(color: Color($hexTeal));
+                          }
+
+                          return ListTile(
+                            leading: Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: Color($hexTeal),
+                                  width: 2,
+                                ),
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(5),
+                                child: Image.network(song.artworkUrl60),
+                              ),
+                            ),
+                            title: Text(song.trackName),
+                            subtitle: Text(song.artistName),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) => SongDetailScreen(song: song),
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
             ),
         ],
       ),

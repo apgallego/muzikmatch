@@ -1,5 +1,6 @@
 import 'package:url_launcher/url_launcher.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:muzikmatch/classes/song.dart';
 
 //get bigger song artworks
 String getBiggerArtwork($artwork, px) {
@@ -24,11 +25,10 @@ void launchPreviewUrl(Map<String, dynamic> song) async {
 }
 
 // play preview URL
-
 final AudioPlayer player = AudioPlayer();
 
-void playPreview(Map<String, dynamic> song) {
-  player.play(UrlSource(song['previewUrl']));
+void playPreview(Song song) {
+  player.play(UrlSource(song.previewUrl));
 }
 
 void stopPreview() {
