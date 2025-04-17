@@ -32,7 +32,6 @@ class Song {
   final String? contentAdvisoryRating;
   final bool isStreamable;
 
-  // Constructor
   Song({
     required this.wrapperType,
     required this.kind,
@@ -68,7 +67,7 @@ class Song {
     required this.isStreamable,
   });
 
-  // Factory constructor to create a Song from a JSON map
+  /// Crea el objeto a partir de JSON (iTunes)
   factory Song.fromJson(Map<String, dynamic> json) {
     return Song(
       wrapperType: json['wrapperType'] as String,
@@ -106,41 +105,95 @@ class Song {
     );
   }
 
-  // Method to convert Song instance back to JSON
-  Map<String, dynamic> toJson() {
+  /// Convierte la instancia a JSON (iTunes)
+  Map<String, dynamic> toJson() => {
+    'wrapperType': wrapperType,
+    'kind': kind,
+    'artistId': artistId,
+    'collectionId': collectionId,
+    'trackId': trackId,
+    'artistName': artistName,
+    'collectionName': collectionName,
+    'trackName': trackName,
+    'collectionCensoredName': collectionCensoredName,
+    'trackCensoredName': trackCensoredName,
+    'artistViewUrl': artistViewUrl,
+    'collectionViewUrl': collectionViewUrl,
+    'trackViewUrl': trackViewUrl,
+    'previewUrl': previewUrl,
+    'artworkUrl30': artworkUrl30,
+    'artworkUrl60': artworkUrl60,
+    'artworkUrl100': artworkUrl100,
+    'collectionPrice': collectionPrice,
+    'trackPrice': trackPrice,
+    'releaseDate': releaseDate.toIso8601String(),
+    'collectionExplicitness': collectionExplicitness,
+    'trackExplicitness': trackExplicitness,
+    'discCount': discCount,
+    'discNumber': discNumber,
+    'trackCount': trackCount,
+    'trackNumber': trackNumber,
+    'trackTimeMillis': trackTimeMillis,
+    'country': country,
+    'currency': currency,
+    'primaryGenreName': primaryGenreName,
+    'contentAdvisoryRating': contentAdvisoryRating,
+    'isStreamable': isStreamable,
+  };
+
+  /// Para guardar en la tabla `songs` de SQLite
+  Map<String, dynamic> toMap() {
     return {
-      'wrapperType': wrapperType,
-      'kind': kind,
-      'artistId': artistId,
-      'collectionId': collectionId,
-      'trackId': trackId,
-      'artistName': artistName,
-      'collectionName': collectionName,
+      'id': trackId,
       'trackName': trackName,
-      'collectionCensoredName': collectionCensoredName,
-      'trackCensoredName': trackCensoredName,
-      'artistViewUrl': artistViewUrl,
-      'collectionViewUrl': collectionViewUrl,
-      'trackViewUrl': trackViewUrl,
-      'previewUrl': previewUrl,
-      'artworkUrl30': artworkUrl30,
+      'artistName': artistName,
       'artworkUrl60': artworkUrl60,
-      'artworkUrl100': artworkUrl100,
-      'collectionPrice': collectionPrice,
-      'trackPrice': trackPrice,
-      'releaseDate': releaseDate.toIso8601String(),
-      'collectionExplicitness': collectionExplicitness,
-      'trackExplicitness': trackExplicitness,
-      'discCount': discCount,
-      'discNumber': discNumber,
-      'trackCount': trackCount,
-      'trackNumber': trackNumber,
-      'trackTimeMillis': trackTimeMillis,
-      'country': country,
-      'currency': currency,
-      'primaryGenreName': primaryGenreName,
-      'contentAdvisoryRating': contentAdvisoryRating,
-      'isStreamable': isStreamable,
+      // añade aquí otros campos que quieras persistir (p.ej. previewUrl)
     };
   }
+
+  /// Para leer desde la tabla `songs` de SQLite
+  factory Song.fromMap(Map<String, dynamic> map) {
+    return Song(
+      wrapperType: '', // Valores vacíos o defaults
+      kind: '',
+      artistId: 0,
+      collectionId: 0,
+      trackId: map['id'] as int,
+      artistName: map['artistName'] as String,
+      collectionName: '', // Podrías omitir en UI de local
+      trackName: map['trackName'] as String,
+      collectionCensoredName: '',
+      trackCensoredName: '',
+      artistViewUrl: '',
+      collectionViewUrl: '',
+      trackViewUrl: '',
+      previewUrl: '',
+      artworkUrl30: '',
+      artworkUrl60: map['artworkUrl60'] as String,
+      artworkUrl100: '',
+      collectionPrice: 0.0,
+      trackPrice: 0.0,
+      releaseDate: DateTime.now(),
+      collectionExplicitness: '',
+      trackExplicitness: '',
+      discCount: 0,
+      discNumber: 0,
+      trackCount: 0,
+      trackNumber: 0,
+      trackTimeMillis: 0,
+      country: '',
+      currency: '',
+      primaryGenreName: '',
+      contentAdvisoryRating: null,
+      isStreamable: false,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || other is Song && trackId == other.trackId;
+
+  @override
+  int get hashCode => trackId.hashCode;
 }
