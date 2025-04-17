@@ -16,7 +16,7 @@ class Song {
   final String artworkUrl30;
   final String artworkUrl60;
   final String artworkUrl100;
-  final double collectionPrice;
+  double? collectionPrice;
   final double trackPrice;
   final DateTime releaseDate;
   final String collectionExplicitness;

@@ -1,6 +1,7 @@
 import 'package:url_launcher/url_launcher.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:muzikmatch/classes/song.dart';
+import 'package:flutter/material.dart';
 
 //get bigger song artworks
 String getBiggerArtwork($artwork, px) {
@@ -33,4 +34,17 @@ void playPreview(Song song) {
 
 void stopPreview() {
   player.stop();
+}
+
+//show snackbar error
+void showSnackBar(text, context) {
+  //show snackbar after first frame, in case the context was   not fully loaded
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(text, style: TextStyle(color: Colors.black)),
+        backgroundColor: Colors.redAccent,
+      ),
+    );
+  });
 }

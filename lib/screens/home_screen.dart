@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:muzikmatch/classes/playlist.dart';
 import 'package:muzikmatch/classes/song.dart';
+import 'package:muzikmatch/db/database_helper.dart';
 import 'package:muzikmatch/screens/playlist_manager_screen.dart';
+import 'package:muzikmatch/utils/utils.dart';
 import '../utils/http_requests.dart';
 import './song_detail_screen.dart';
 import '../constants.dart';
@@ -17,12 +19,33 @@ class _HomeScreenState extends State<HomeScreen> {
   String query = '';
   List<Song> results = [];
   final List<Playlist> _playlistList = [];
+  final DbHelper _dbHelper = DbHelper();
 
   bool isLoading = false;
 
   final TextEditingController _controller = TextEditingController();
 
-  // Lógica de obtención de canciones
+  @override
+  void initState() {
+    super.initState();
+    _loadPlaylists();
+  }
+
+  void _loadPlaylists() async {
+    try {
+      final lists = await _dbHelper.getAllPlaylists();
+
+      setState(() {
+        _playlistList.clear();
+        _playlistList.addAll(lists);
+      });
+    } catch (e) {
+      //show snackbar after first frame, in case the context was   not fully loaded
+      // ignore: use_build_context_synchronously
+      showSnackBar("Error loading playlists", context);
+    }
+  }
+
   void getSongs() async {
     setState(() {
       isLoading = true;
