@@ -61,7 +61,7 @@ class _SongDetailScreenState extends State<SongDetailScreen> {
                 height: 300,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Color($hexTeal), width: 2),
+                  border: Border.all(color: Color($primaryColor), width: 2),
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8),

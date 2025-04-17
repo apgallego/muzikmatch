@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:muzikmatch/classes/playlist.dart';
 import 'package:muzikmatch/classes/song.dart';
+import 'package:muzikmatch/screens/playlist_manager_screen.dart';
 import '../utils/http_requests.dart';
 import './song_detail_screen.dart';
 import '../constants.dart';
@@ -13,7 +15,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String query = '';
-  List<Song> results = []; // Cambiado a una lista de objetos Song
+  List<Song> results = [];
+  final List<Playlist> _playlistList = [];
 
   bool isLoading = false;
 
@@ -31,6 +34,47 @@ class _HomeScreenState extends State<HomeScreen> {
       results = (response).map((songJson) => Song.fromJson(songJson)).toList();
       isLoading = false;
     });
+  }
+
+  void _showPlaylistSelectionDialog(BuildContext context, Song song) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Add to playlist'),
+          backgroundColor: Color($secondaryColor),
+          content:
+              _playlistList.isEmpty
+                  ? const Text('No playlists available!')
+                  : SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children:
+                          _playlistList.map((playlist) {
+                            return ListTile(
+                              title: Text(playlist.name),
+                              onTap: () {
+                                setState(() {
+                                  playlist.songs.add(
+                                    song,
+                                  ); // Aquí asumes que tienes la lista de canciones dentro
+                                  playlist.nSongs = playlist.songs.length;
+                                });
+                                Navigator.of(context).pop();
+                              },
+                            );
+                          }).toList(),
+                    ),
+                  ),
+          actions: [
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -81,7 +125,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ? Center(
                         child: Text(
                           'No songs found. Try another search 🎧',
-                          style: TextStyle(fontSize: 16, color: Colors.black54),
+                          style: TextStyle(fontSize: 16, color: Colors.black),
                         ),
                       )
                       : ListView.builder(
@@ -91,14 +135,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
                           // Separador opcional entre elementos
                           if (index.isOdd) {
-                            return Divider(color: Color($hexTeal));
+                            return Divider(color: Color($primaryColor));
                           }
 
                           return ListTile(
                             leading: Container(
                               decoration: BoxDecoration(
                                 border: Border.all(
-                                  color: Color($hexTeal),
+                                  color: Color($primaryColor),
                                   width: 2,
                                 ),
                                 borderRadius: BorderRadius.circular(5),
@@ -119,11 +163,31 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               );
                             },
+                            trailing: IconButton(
+                              onPressed: () {
+                                _showPlaylistSelectionDialog(context, song);
+                              },
+                              icon: Icon(Icons.add_circle_outline),
+                            ),
                           );
                         },
                       ),
             ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Color($primaryColor),
+        foregroundColor: Colors.white,
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const PlaylistManagerScreen(),
+            ),
+          );
+        },
+        tooltip: 'Create playlist',
+        child: const Icon(Icons.playlist_add),
       ),
     );
   }
