@@ -32,7 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadPlaylists();
   }
 
-  void _loadPlaylists() async {
+  Future<void> _loadPlaylists() async {
     try {
       final lists = await _dbHelper.getAllPlaylists();
 
@@ -72,9 +72,10 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _showPlaylistSelectionDialog(BuildContext context, Song song) {
-    _loadPlaylists();
+  void _showPlaylistSelectionDialog(BuildContext context, Song song) async {
+    await _loadPlaylists();
     showDialog(
+      // ignore: use_build_context_synchronously
       context: context,
       builder: (context) {
         return AlertDialog(

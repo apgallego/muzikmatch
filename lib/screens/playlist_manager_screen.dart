@@ -22,7 +22,7 @@ class _PlaylistManagerScreenState extends State<PlaylistManagerScreen> {
     _loadPlaylists();
   }
 
-  void _loadPlaylists() async {
+  Future<void> _loadPlaylists() async {
     try {
       final lists = await _dbHelper.getAllPlaylists();
 
@@ -31,6 +31,7 @@ class _PlaylistManagerScreenState extends State<PlaylistManagerScreen> {
         _playlistList.addAll(lists);
       });
     } catch (e) {
+      // En caso de error, muestra un mensaje
       // ignore: use_build_context_synchronously
       showSnackBar("Error loading playlists", context);
     }
@@ -79,7 +80,10 @@ class _PlaylistManagerScreenState extends State<PlaylistManagerScreen> {
                 backgroundColor: Color($primaryColor),
               ),
               onPressed: () {
-                _createPlaylist(formKey, nameController);
+                _createPlaylist(formKey, nameController).then((_) {
+                  // ignore: use_build_context_synchronously
+                  Navigator.of(context).pop();
+                });
               },
               child: const Text(
                 'Create',
@@ -143,9 +147,8 @@ class _PlaylistManagerScreenState extends State<PlaylistManagerScreen> {
 
       try {
         await _dbHelper.insertPlaylist(newPlaylist);
-        _loadPlaylists();
+        await _loadPlaylists();
         // ignore: use_build_context_synchronously
-        Navigator.of(context).pop();
       } catch (e) {
         // ignore: use_build_context_synchronously
         showSnackBar("Error saving playlist", context);
