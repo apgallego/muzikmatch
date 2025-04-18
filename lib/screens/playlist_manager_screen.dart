@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:muzikmatch/constants.dart';
 import 'package:muzikmatch/db/database_helper.dart';
+import 'package:muzikmatch/screens/playlist_screen.dart';
 import '../classes/playlist.dart';
 import '../utils/utils.dart';
 
@@ -43,7 +44,17 @@ class _PlaylistManagerScreenState extends State<PlaylistManagerScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Create new playlist'),
+          title: Container(
+            decoration: const BoxDecoration(
+              border: Border(bottom: BorderSide(width: 2.0)),
+            ),
+            padding: EdgeInsets.only(bottom: 4),
+            child: Text(
+              'Create new playlist',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+
           backgroundColor: Color($secondaryColor),
           content: Form(
             key: formKey,
@@ -86,7 +97,16 @@ class _PlaylistManagerScreenState extends State<PlaylistManagerScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Are you sure you want to delete this playlist?'),
+          title: Container(
+            decoration: const BoxDecoration(
+              border: Border(bottom: BorderSide(width: 2.0)),
+            ),
+            padding: EdgeInsets.only(bottom: 4),
+            child: Text(
+              'Delete playlist',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
           content: Text('This action cannot be undone.'),
           backgroundColor: Colors.redAccent,
           actions: <Widget>[
@@ -111,22 +131,25 @@ class _PlaylistManagerScreenState extends State<PlaylistManagerScreen> {
     );
   }
 
-  void _createPlaylist(formKey, nameController) {
+  Future<void> _createPlaylist(formKey, nameController) async {
     if (formKey.currentState!.validate()) {
       final newPlaylist = Playlist(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         name: nameController.text.trim(),
         nSongs: 0,
         songs: [],
+        playlistTimeMillis: 0,
       );
 
-      _dbHelper.insertPlaylist(newPlaylist);
-
-      setState(() {
-        _playlistList.add(newPlaylist);
-      });
-
-      Navigator.of(context).pop();
+      try {
+        await _dbHelper.insertPlaylist(newPlaylist);
+        _loadPlaylists();
+        // ignore: use_build_context_synchronously
+        Navigator.of(context).pop();
+      } catch (e) {
+        // ignore: use_build_context_synchronously
+        showSnackBar("Error saving playlist", context);
+      }
     }
   }
 
@@ -165,6 +188,16 @@ class _PlaylistManagerScreenState extends State<PlaylistManagerScreen> {
                 _showDeleteConfirmationDialog(context, playlist.id);
               },
             ),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => PlaylistScreen(playlist: playlist),
+                ),
+              ).then((_) {
+                _loadPlaylists();
+              });
+            },
           );
         },
         separatorBuilder:

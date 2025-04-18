@@ -28,6 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    // deleteLocalDatabase();
     _loadPlaylists();
   }
 
@@ -59,12 +60,34 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  void addSongToPlaylist(Playlist playlist, Song song) {
+    try {
+      _dbHelper.addSongToPlaylist(playlist.id, song);
+      setState(() {
+        playlist.songs.add(song);
+        playlist.nSongs = playlist.songs.length;
+      });
+    } catch (e) {
+      showSnackBar("Error adding song!", context);
+    }
+  }
+
   void _showPlaylistSelectionDialog(BuildContext context, Song song) {
+    _loadPlaylists();
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Add to playlist'),
+          title: Container(
+            decoration: const BoxDecoration(
+              border: Border(bottom: BorderSide(width: 2.0)),
+            ),
+            padding: EdgeInsets.only(bottom: 4),
+            child: Text(
+              'Add to playlist',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
           backgroundColor: Color($secondaryColor),
           content:
               _playlistList.isEmpty
@@ -74,17 +97,17 @@ class _HomeScreenState extends State<HomeScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children:
                           _playlistList.map((playlist) {
-                            return ListTile(
-                              title: Text(playlist.name),
-                              onTap: () {
-                                setState(() {
-                                  playlist.songs.add(
-                                    song,
-                                  ); // Aquí asumes que tienes la lista de canciones dentro
-                                  playlist.nSongs = playlist.songs.length;
-                                });
-                                Navigator.of(context).pop();
-                              },
+                            return Column(
+                              children: [
+                                ListTile(
+                                  title: Text(playlist.name),
+                                  onTap: () {
+                                    addSongToPlaylist(playlist, song);
+                                    Navigator.of(context).pop();
+                                  },
+                                ),
+                                Divider(color: Color($hexTeal)),
+                              ],
                             );
                           }).toList(),
                     ),

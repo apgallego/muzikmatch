@@ -148,6 +148,7 @@ class Song {
       'trackName': trackName,
       'artistName': artistName,
       'artworkUrl60': artworkUrl60,
+      'trackTimeMillis': trackTimeMillis,
       // añade aquí otros campos que quieras persistir (p.ej. previewUrl)
     };
   }

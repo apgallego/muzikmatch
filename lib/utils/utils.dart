@@ -2,6 +2,8 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:muzikmatch/classes/song.dart';
 import 'package:flutter/material.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart';
 
 //get bigger song artworks
 String getBiggerArtwork($artwork, px) {
@@ -48,3 +50,13 @@ void showSnackBar(text, context) {
     );
   });
 }
+
+//delete db
+Future<void> deleteLocalDatabase() async {
+  final path = join(await getDatabasesPath(), 'muzikmatch.db');
+  await deleteDatabase(path);
+  print('✅ Base de datos eliminada correctamente.');
+}
+
+//format millis
+String formatMillis(millis) => (millis / 60000).toStringAsFixed(2);

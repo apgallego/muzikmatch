@@ -4,6 +4,7 @@ class Playlist {
   final String id;
   String name;
   int nSongs;
+  int playlistTimeMillis;
   List<Song> songs;
 
   Playlist({
@@ -11,6 +12,7 @@ class Playlist {
     required this.name,
     required this.nSongs,
     required this.songs,
+    required this.playlistTimeMillis,
   });
 
   factory Playlist.fromJson(Map<String, dynamic> json) {
@@ -22,6 +24,7 @@ class Playlist {
           (json['songs'] as List)
               .map((songJson) => Song.fromJson(songJson))
               .toList(),
+      playlistTimeMillis: json['playlistTimeMillis'] as int,
     );
   }
 
@@ -31,6 +34,7 @@ class Playlist {
       'name': name,
       'nSongs': nSongs,
       'songs': songs.map((song) => song.toJson()).toList(),
+      'playlistTimeMillis': playlistTimeMillis,
     };
   }
 }

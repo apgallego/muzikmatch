@@ -96,7 +96,7 @@ class _SongDetailScreenState extends State<SongDetailScreen> {
             buildDetailRow('📀 Genre: ', song.primaryGenreName),
             buildDetailRow(
               '⏱️ Length: ',
-              '${(song.trackTimeMillis / 60000).toStringAsFixed(2)} min', // Calculamos la duración
+              '${formatMillis(song.trackTimeMillis)} min', // Calculamos la duración
             ),
             const SizedBox(height: 20),
             // Verificamos si hay un previewUrl

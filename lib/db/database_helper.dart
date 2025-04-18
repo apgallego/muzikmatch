@@ -39,6 +39,7 @@ class DbHelper {
         id INTEGER PRIMARY KEY,
         trackName TEXT NOT NULL,
         artistName TEXT NOT NULL,
+        trackTimeMillis INTEGER NOT NULL,
         artworkUrl60 TEXT
       );
     ''');
@@ -48,7 +49,8 @@ class DbHelper {
       CREATE TABLE $tablePlaylists (
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
-        nSongs INTEGER NOT NULL
+        nSongs INTEGER NOT NULL,
+        playlistTimeMillis INTEGER NOT NULL
       );
     ''');
 
@@ -57,6 +59,7 @@ class DbHelper {
       CREATE TABLE $tablePlaylistSongs (
         playlistId TEXT,
         songId INTEGER,
+        position INTEGER DEFAULT 0,
         FOREIGN KEY (playlistId) REFERENCES $tablePlaylists (id),
         FOREIGN KEY (songId) REFERENCES $tableSongs (id),
         PRIMARY KEY (playlistId, songId)
@@ -76,22 +79,73 @@ class DbHelper {
 
   // insert playlist
   Future<void> insertPlaylist(Playlist playlist) async {
+    try {
+      final db = await database;
+
+      // insert playlist
+      await db.insert(tablePlaylists, {
+        'id': playlist.id,
+        'name': playlist.name,
+        'nSongs': playlist.nSongs,
+        'playlistTimeMillis': playlist.playlistTimeMillis,
+      }, conflictAlgorithm: ConflictAlgorithm.replace);
+
+      // insert associated songs to playlist
+      for (var song in playlist.songs) {
+        await db.insert(tablePlaylistSongs, {
+          'playlistId': playlist.id,
+          'songId': song.trackId,
+        }, conflictAlgorithm: ConflictAlgorithm.replace);
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Add song to playlist.
+  Future<void> addSongToPlaylist(String playlistId, Song song) async {
     final db = await database;
 
-    // insert playlist
-    await db.insert(tablePlaylists, {
-      'id': playlist.id,
-      'name': playlist.name,
-      'nSongs': playlist.nSongs,
+    // 1) insert into songs
+    await db.insert(
+      tableSongs,
+      song.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.ignore,
+    );
+
+    // 2) insert into playlist
+    await db.insert(tablePlaylistSongs, {
+      'playlistId': playlistId,
+      'songId': song.trackId,
     }, conflictAlgorithm: ConflictAlgorithm.replace);
 
-    // insert associated songs to playlist
-    for (var song in playlist.songs) {
-      await db.insert(tablePlaylistSongs, {
-        'playlistId': playlist.id,
-        'songId': song.trackId,
-      }, conflictAlgorithm: ConflictAlgorithm.replace);
-    }
+    // 3) recalc how many songs has the playlist atm
+    final countResult = await db.rawQuery(
+      'SELECT COUNT(*) AS cnt '
+      'FROM $tablePlaylistSongs '
+      'WHERE playlistId = ?',
+      [playlistId],
+    );
+    final newCount = Sqflite.firstIntValue(countResult) ?? 0;
+
+    // 4) Update nSongs
+    // await db.update(
+    //   tablePlaylists,
+    //   {
+    //     'nSongs': newCount
+    //   },
+    //   where: 'id = ?',
+    //   whereArgs: [playlistId],
+    // );
+
+    await db.rawUpdate(
+      '''
+      UPDATE $tablePlaylists
+      SET nSongs = ?, playlistTimeMillis = playlistTimeMillis + ?
+      WHERE id = ?
+      ''',
+      [newCount, song.trackTimeMillis, playlistId],
+    );
   }
 
   // get all songs
@@ -108,16 +162,19 @@ class DbHelper {
     final result = await db.query(tablePlaylists);
 
     List<Playlist> playlists = [];
+
     for (var map in result) {
-      // get songs from a specific playlist
       final playlistId = map['id'] as String;
+
+      // get songs
       final songs = await getSongsFromPlaylist(playlistId);
 
       playlists.add(
         Playlist(
           id: playlistId,
           name: map['name'] as String,
-          nSongs: map['nSongs'] as int,
+          nSongs: map['nSongs'] as int? ?? 0,
+          playlistTimeMillis: map['playlistTimeMillis'] as int? ?? 0,
           songs: songs,
         ),
       );
@@ -134,6 +191,7 @@ class DbHelper {
       tablePlaylistSongs,
       where: 'playlistId = ?',
       whereArgs: [playlistId],
+      orderBy: 'position',
     );
 
     List<Song> songs = [];
@@ -183,13 +241,46 @@ class DbHelper {
   }
 
   // delete a song from a specific playlist
-  Future<void> deleteSongFromPlaylist(String playlistId, int songId) async {
+  Future<void> deleteSongFromPlaylist(
+    String playlistId,
+    int songId,
+    int songMillis,
+  ) async {
     final db = await database;
 
-    await db.delete(
-      tablePlaylistSongs,
-      where: 'playlistId = ? AND songId = ?',
-      whereArgs: [playlistId, songId],
-    );
+    // transaction for both operations to be atomic
+    await db.transaction((txn) async {
+      // 1) delete relation
+      await txn.delete(
+        tablePlaylistSongs,
+        where: 'playlistId = ? AND songId = ?',
+        whereArgs: [playlistId, songId],
+      );
+
+      // 2) updates nSongs and playlisTimeMillis
+      await txn.rawUpdate(
+        '''
+        UPDATE $tablePlaylists
+        SET nSongs = nSongs - 1,
+            playlistTimeMillis = playlistTimeMillis - ?
+        WHERE id = ?
+        ''',
+        [songMillis, playlistId],
+      );
+    });
+  }
+
+  Future<void> updateSongOrder(String playlistId, List<Song> songs) async {
+    final db = await database;
+    final batch = db.batch();
+    for (var i = 0; i < songs.length; i++) {
+      batch.update(
+        tablePlaylistSongs,
+        {'position': i},
+        where: 'playlistId = ? AND songId = ?',
+        whereArgs: [playlistId, songs[i].trackId],
+      );
+    }
+    await batch.commit(noResult: true);
   }
 }
